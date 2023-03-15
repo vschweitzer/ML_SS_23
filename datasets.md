@@ -21,3 +21,10 @@ Select One!
 
 
 
+selected.
+
+| Instances | Attributes | Link |
+|---------|---------|-----|
+|4601|57| https://archive-beta.ics.uci.edu/dataset/94/spambase   
+| - | - | https://archive-beta.ics.uci.edu/dataset/360/air+quality |
+
