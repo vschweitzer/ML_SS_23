@@ -11,6 +11,9 @@ Loading the data, fixing the formatting of the data and adding headers and conve
 
 import pandas as pd
 import sys
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
 
 file = open("/content/sample_data/spambase.data", "r")
 
@@ -27,35 +30,29 @@ df = pd.read_csv(TESTDATA,header=0,index_col=False)
 
 """Data Exploration"""
 
-import pandas as pd
-import numpy as np
-import seaborn as sns
-import matplotlib.pyplot as plt
-
 df.describe()
 
 """Correlation matrix gives us an idea of how all the variables are related to each other from 1 being most related to -1 being least related"""
 
 corr_matrix = df.corr()
-corr_matrix
+corr_matrix['spam']
 
 """As we have 57 features the most related and most unrelated 2 features are derived here."""
 
-# Create long-format dataframe from correlation matrix
-corr_df = corr_matrix.stack().reset_index()
-corr_df.columns = ['feature_1', 'feature_2', 'correlation']
+print('Few of the most corelated columns based on the matrix above is')
+print('word_freq_your = 0.383234')
+print('word_freq_remove = .332117')
+print('word_freq_000 = 0.334787')
+print('char_freq_$ = 0.323629')
 
-# Sort by absolute value of correlation coefficient
-corr_df['abs_correlation'] = corr_df['correlation'].abs()
-corr_df = corr_df.sort_values(by='abs_correlation', ascending=False)
+print('most non corelated colmsn based on the matrix above is')
+print('word_freq_hp = -0.256723')
+print('word_freq_hpl = -0.232968')
+print('word_freq_george = -0.183404')
 
-# Pick most correlated and most uncorrelated pairs of features
-most_correlated = corr_df.head(1)[['feature_1', 'feature_2',]].values
-most_uncorrelated = corr_df.tail(1)[['feature_1', 'feature_2'] ].values
-
-most_correlated
-
-most_uncorrelated
+sns.set(style="ticks", color_codes=True)    
+g = sns.pairplot(df)
+plt.show()
 
 sns.heatmap(corr_matrix, cmap="coolwarm", annot=True)
 plt.show()
@@ -66,11 +63,11 @@ plt.figure(figsize=(14,14))
 sns.heatmap(corr_matrix, cmap="coolwarm", annot=True, fmt=".2f",xticklabels=False, yticklabels=False)
 plt.show()
 
-threshold = 0.5
-corr_matrix_filtered = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
-corr_matrix_filtered = corr_matrix_filtered[corr_matrix_filtered.abs() > threshold]
+# threshold = 0.5
+# corr_matrix_filtered = corr_matrix.where(np.triu(np.ones(corr_matrix.shape), k=1).astype(np.bool))
+# corr_matrix_filtered = corr_matrix_filtered[corr_matrix_filtered.abs() > threshold]
 
-sns.heatmap(corr_matrix_filtered, cmap="coolwarm", annot=True, fmt=".2f")
+# sns.heatmap(corr_matrix_filtered, cmap="coolwarm", annot=True, fmt=".2f")
 
 import plotly.express as px
 corr_matrix = df.corr()
@@ -89,14 +86,14 @@ fig = px.imshow(corr_matrix,
 fig.update_layout(width=800, height=800)
 fig.show()
 
-columns=df.keys()
-for i in columns:
-  sns.histplot(data=df, x=i, hue="spam", kde=True)
-  plt.show()
+# columns=df.keys()
+# for i in columns:
+#   sns.histplot(data=df, x=i, hue="spam", kde=True)
+#   plt.show()
 
-for i in columns:
-  sns.boxplot(x="spam", y=i, data=df)
-  plt.show()
+# for i in columns:
+#   sns.boxplot(x="spam", y=i, data=df)
+#   plt.show()
 
 from sklearn.ensemble import RandomForestClassifier
 rf = RandomForestClassifier()
@@ -110,6 +107,11 @@ importances = rf.feature_importances_
 importances
 
 feat_importances = pd.Series(importances, index=X.columns)
-feat_importances.nlargest(20).plot(kind='barh')
+plt.figure(figsize=(12, 12))
+feat_importances.nlargest(57).plot(kind='barh')
 plt.show()
+
+
+  
+# changing the size of figure to 2X2
 
