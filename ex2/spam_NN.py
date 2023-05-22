@@ -27,10 +27,6 @@ y_train=np.expand_dims(y_train,axis=1)
 y_test=np.expand_dims(y_test,axis=1)
 
 
-network1 = Network(learning_rate)
-# print(X_train.shape)
-print(y_train.shape)
-
 fc1 = FcLayer(57,50)
 ac1 = AcLayer(relu, relu_prime)
 fc2 = FcLayer(50, 40)
@@ -100,3 +96,15 @@ print(np.unique(y_pred))
 accuracy=score(y_test,y_pred)
 print("accuracy")
 print(accuracy)
+'''
+network1 = Network(learning_rate)
+
+# fc1 = FcLayer(2, 3)
+# ac1 = AcLayer(tanh, tanh_prime)
+# fc2 = FcLayer(3, 1)
+# ac2 = AcLayer(tanh, tanh_prime)
+# network1.add(fc1)
+# network1.add(ac1)
+# network1.add(fc2)
+# network1.add(ac2)
+
