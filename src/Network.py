@@ -5,7 +5,6 @@ from ACLayer import AcLayer
 from activation_functions import sigmoid, relu, sigmoid_prime
 
 
-
 class Network:
     def __init__(self, learning_rate, epochs: int = 1000, expand_dims: bool = True):
         self.layers = []
@@ -13,7 +12,8 @@ class Network:
         self.output = []
         self.epochs = epochs
         self.expand_dims = expand_dims
-        self.threshold = 0.5
+        self.min_category: int
+        self.max_category: int
         self.last_result = None
 
     # rework when working with the actual datasets
@@ -35,21 +35,36 @@ class Network:
             for layer in self.layers:
                 output = layer.forward_propagation(output)
             result.append(output)
-        print("Predict function works")
+        # print("Predict function works")
         self.last_result = result
-        print(result)
+        # print(result)
         return result
 
     def predict(self, data):
+        data = self._clean_data(data)
         scores = self.predict_score(data)
-        return [1 if elem[0] >= self.threshold else 0 for elem in scores]
+        return [
+            round(
+                (elem[0][0] - self.min_category)
+                * (self.max_category - self.min_category)
+            )
+            for elem in scores
+        ]
 
-    def predict_proba(self, data):
-        scores = self.predict_score(data)
-        # Create a probability for each score. The closer the prediction is to the threshold, the lower the probability.
-        return [(elem[0] - self.threshold) / (1.0 - self.threshold) if elem[0] >= self.threshold else elem[0] / self.threshold for elem in scores]
+    # def predict_proba(self, data):
+    #     scores = self.predict_score(data)
+    #     # Create a probability for each score. The closer the prediction is to the threshold, the lower the probability.
+    #     return [
+    #         (elem[0] - self.threshold) / (1.0 - self.threshold)
+    #         if elem[0] >= self.threshold
+    #         else elem[0] / self.threshold
+    #         for elem in scores
+    #     ]
 
     def train(self, x_train, y_train):
+        self.min_category = min(y_train, key=lambda x: x[0])[0]
+        self.max_category = max(y_train, key=lambda x: x[0])[0]
+
         # Epoch times needed to achieve accurate NN
         for i in range(self.epochs):
             error = 0
@@ -73,16 +88,17 @@ class Network:
     ##########################################
 
     def fit(self, data, targets):
-        if type(data) == pd.DataFrame or type(data) == pd.Series:
-            data = data.to_numpy()
- 
-        if type(targets) == pd.DataFrame or type(targets) == pd.Series:
-            targets = targets.to_numpy()
-        
-        if self.expand_dims:
-            data = np.expand_dims(data, axis=1)
-            targets = np.expand_dims(targets, axis=1)
-
+        data = self._clean_data(data)
+        targets = self._clean_data(targets)
         self.train(data, targets)
 
-        
+    # Utility functions
+
+    def _clean_data(self, data):
+        if type(data) == pd.DataFrame or type(data) == pd.Series:
+            data = data.to_numpy()
+
+        if self.expand_dims:
+            data = np.expand_dims(data, axis=1)
+
+        return data
