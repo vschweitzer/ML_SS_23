@@ -51,16 +51,6 @@ class Network:
             for elem in scores
         ]
 
-    # def predict_proba(self, data):
-    #     scores = self.predict_score(data)
-    #     # Create a probability for each score. The closer the prediction is to the threshold, the lower the probability.
-    #     return [
-    #         (elem[0] - self.threshold) / (1.0 - self.threshold)
-    #         if elem[0] >= self.threshold
-    #         else elem[0] / self.threshold
-    #         for elem in scores
-    #     ]
-
     def train(self, x_train, y_train):
         self.min_category = min(y_train, key=lambda x: x[0])[0]
         self.max_category = max(y_train, key=lambda x: x[0])[0]
@@ -76,7 +66,7 @@ class Network:
                     output = layer.forward_propagation(output)
                 # result.append(output)
                 # err = np.mean(np.power(y_train[j] - output, 2))
-                error = 2 * (output - y_train[j]) / y_train[j].size
+                error = (2 / y_train[j].size) * (output - y_train[j])
 
                 # print("Train function works")
                 for layer in reversed(self.layers):

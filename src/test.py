@@ -85,7 +85,7 @@ out = network1.predict(x_train)
 #print(out)
 
 
-print(out[out>0.5])
+print(out)
 
 # fc1.forward_propagation(input)
 # fc2.forward_propagation(fc1.output)
