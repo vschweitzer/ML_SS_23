@@ -48,10 +48,11 @@ class Network:
         scores = self.predict_score(data)
         # Create a probability for each score. The closer the prediction is to the threshold, the lower the probability.
         return [(elem[0] - self.threshold) / (1.0 - self.threshold) if elem[0] >= self.threshold else elem[0] / self.threshold for elem in scores]
+    
 
-    def train(self, x_train, y_train):
+    def train(self, x_train, y_train, epochs):
         # Epoch times needed to achieve accurate NN
-        for i in range(self.epochs):
+        for i in range(epochs):
             error = 0
             # result = []
             for j in range(len(x_train)):
@@ -61,7 +62,7 @@ class Network:
                     output = layer.forward_propagation(output)
                 # result.append(output)
                 # err = np.mean(np.power(y_train[j] - output, 2))
-                error = 2 * (output - y_train[j]) / y_train[j].size
+                error = (2/ y_train[j].size) * (output - y_train[j]) 
 
                 # print("Train function works")
                 for layer in reversed(self.layers):
@@ -71,6 +72,9 @@ class Network:
     ##########################################
     # Methods for compatibility with sklearn #
     ##########################################
+
+
+    
 
     def fit(self, data, targets):
         if type(data) == pd.DataFrame or type(data) == pd.Series:
