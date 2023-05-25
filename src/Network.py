@@ -58,16 +58,13 @@ class Network:
         # print("Predict function works")
         self.last_result = result
         # print(result)
-        return result
+        return self._softmax(result)
 
     def predict(self, data):
         data = self._clean_data(data)
         scores = self.predict_score(data)
         return [
-            round(
-                (elem[0][0] - self.min_category)
-                * (self.max_category - self.min_category)
-            )
+            np.argmax(elem)
             for elem in scores
         ]
 
@@ -99,9 +96,10 @@ class Network:
 
     def fit(self, data, targets):
         data = self._clean_data(data)
-        n_features = len(data[0][0])
-        self._build_network(n_features, self.node_counts)
         targets = self._clean_data(targets)
+        n_features = len(data[0][0])
+        n_classes = len(np.unique(targets))
+        self._build_network(n_features, n_classes, self.node_counts)
         self.train(data, targets)
 
     # Utility functions
@@ -118,12 +116,13 @@ class Network:
     def _build_network(
         self,
         n_features: int,
+        n_classes: int,
         node_counts: list = [3],
         activation_function=tanh,
         prime_function=tanh_prime,
     ):
         input_shape = n_features
-        output_shape = 1
+        output_shape = n_classes if n_classes > 2 else 1
         prior_output = input_shape
         for n_nodes in node_counts:
             i = prior_output
@@ -137,3 +136,6 @@ class Network:
         # Add output layer
         self.add(FcLayer(prior_output, output_shape))
         self.add(AcLayer(activation_function, prime_function))
+
+    def _softmax(self, values: np.array):
+        return values / np.sum(values)
