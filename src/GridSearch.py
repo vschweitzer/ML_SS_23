@@ -57,8 +57,7 @@ class GridSearcher:
         self, folds: int = 5, n_jobs: int = -1, verbose: int = 0, scoring="f1_macro"
     ):
         self.results = pd.DataFrame(
-            columns=list(self.params.keys())
-            + ["test_score", "fit_time", "score_time", "score_mean"]
+            columns= ["params", "test_score", "fit_time", "score_time", "score_mean"]
         )
         hyperparameter_combinations = list(product(*self.params.values()))
         total_combinations: int = len(hyperparameter_combinations)
@@ -76,7 +75,7 @@ class GridSearcher:
             )
 
             self.results.loc[len(self.results.index)] = [
-                *combination,
+                params,
                 param_score["test_score"],
                 param_score["fit_time"],
                 param_score["score_time"],
