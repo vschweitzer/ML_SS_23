@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(__file__))
 from FCLayer import FcLayer
 from ACLayer import AcLayer
 from Network import Network
-from activation_functions import sigmoid, relu, sigmoid_prime, tanh, tanh_prime
+from activation_functions import sigmoid, relu, sigmoid_derivative, tanh, tanh_derivative
 
 learning_rate = 0.1
 # x_train = np.array([[[0, 0]], [[0, 1]], [[1, 0]], [[1, 1]]])
@@ -75,7 +75,7 @@ for j in range(layers):
         o = output_values
 
     fc = FcLayer(i, o)
-    ac = AcLayer(tanh, tanh_prime)
+    ac = AcLayer(tanh, tanh_derivative)
     network1.add(fc)
     network1.add(ac)
 

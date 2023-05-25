@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from FCLayer import FcLayer
 from ACLayer import AcLayer
-from activation_functions import sigmoid, relu, sigmoid_prime, tanh, tanh_prime
+from activation_functions import sigmoid, relu, sigmoid_derivative, tanh, tanh_derivative
 
 
 class Network:
@@ -12,6 +12,7 @@ class Network:
         epochs: int = 1000,
         expand_dims: bool = True,
         node_counts: list = [3],
+        activation_function = (tanh, tanh_derivative)
     ):
         self.layers = []
         self.learning_rate = learning_rate
@@ -22,6 +23,8 @@ class Network:
         self.max_category: int
         self.last_result = None
         self.node_counts = node_counts
+        self.activation_function = activation_function
+
 
     def get_params(self, deep: bool = False):
         return {
@@ -29,6 +32,7 @@ class Network:
             "learning_rate": self.learning_rate,
             "expand_dims": self.expand_dims,
             "node_counts": self.node_counts,
+            "activation_function": self.activation_function,
         }
 
     def set_params(self, **parameters):
@@ -118,8 +122,7 @@ class Network:
         n_features: int,
         n_classes: int,
         node_counts: list = [3],
-        activation_function=tanh,
-        prime_function=tanh_prime,
+
     ):
         input_shape = n_features
         output_shape = n_classes if n_classes > 2 else 1
@@ -129,13 +132,13 @@ class Network:
             o = n_nodes
             prior_output = o
             fc = FcLayer(i, o)
-            ac = AcLayer(activation_function, prime_function)
+            ac = AcLayer(self.activation_function[0], self.activation_function[1])
             self.add(fc)
             self.add(ac)
 
         # Add output layer
         self.add(FcLayer(prior_output, output_shape))
-        self.add(AcLayer(activation_function, prime_function))
+        self.add(AcLayer(self.activation_function[0], self.activation_function[1]))
 
     def _softmax(self, values: np.array):
         return values / np.sum(values)
