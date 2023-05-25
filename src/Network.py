@@ -66,7 +66,7 @@ class Network:
         data = self._clean_data(data)
         scores = self.predict_score(data)
         return [
-            [1 if value == np.max(elem[0]) else 0 for value in elem[0]] if len(elem[0]) > 1 else round(elem[0])
+            [1 if value == np.max(elem[0]) else 0 for value in elem[0]] if len(elem[0]) > 1 else round(elem[0][0])
             for elem in scores
         ]
 
