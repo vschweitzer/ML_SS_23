@@ -2,11 +2,17 @@ import numpy as np
 import pandas as pd
 from FCLayer import FcLayer
 from ACLayer import AcLayer
-from activation_functions import sigmoid, relu, sigmoid_prime
+from activation_functions import sigmoid, relu, sigmoid_prime, tanh, tanh_prime
 
 
 class Network:
-    def __init__(self, learning_rate, epochs: int = 1000, expand_dims: bool = True):
+    def __init__(
+        self,
+        learning_rate,
+        epochs: int = 1000,
+        expand_dims: bool = True,
+        node_counts: list = [3],
+    ):
         self.layers = []
         self.learning_rate = learning_rate
         self.output = []
@@ -15,6 +21,20 @@ class Network:
         self.min_category: int
         self.max_category: int
         self.last_result = None
+        self.node_counts = node_counts
+
+    def get_params(self, deep: bool = False):
+        return {
+            "epochs": self.epochs,
+            "learning_rate": self.learning_rate,
+            "expand_dims": self.expand_dims,
+            "node_counts": self.node_counts,
+        }
+
+    def set_params(self, **parameters):
+        for parameter, value in parameters.items():
+            setattr(self, parameter, value)
+        return self
 
     # rework when working with the actual datasets
     def preprocess(self, data):
@@ -79,6 +99,8 @@ class Network:
 
     def fit(self, data, targets):
         data = self._clean_data(data)
+        n_features = len(data[0][0])
+        self._build_network(n_features, self.node_counts)
         targets = self._clean_data(targets)
         self.train(data, targets)
 
@@ -92,3 +114,26 @@ class Network:
             data = np.expand_dims(data, axis=1)
 
         return data
+
+    def _build_network(
+        self,
+        n_features: int,
+        node_counts: list = [3],
+        activation_function=tanh,
+        prime_function=tanh_prime,
+    ):
+        input_shape = n_features
+        output_shape = 1
+        prior_output = input_shape
+        for n_nodes in node_counts:
+            i = prior_output
+            o = n_nodes
+            prior_output = o
+            fc = FcLayer(i, o)
+            ac = AcLayer(activation_function, prime_function)
+            self.add(fc)
+            self.add(ac)
+
+        # Add output layer
+        self.add(FcLayer(prior_output, output_shape))
+        self.add(AcLayer(activation_function, prime_function))
