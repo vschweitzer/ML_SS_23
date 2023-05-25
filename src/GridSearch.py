@@ -1,5 +1,7 @@
 from itertools import product
 import pandas as pd
+import numpy as np
+from sklearn.model_selection import cross_validate
 
 # def grid_search(X, y, param_grid, model_fn):
 #     best_params = None
@@ -51,19 +53,34 @@ class GridSearcher:
         self.y = y
         self.results = None
 
-    def search(self):
-        self.results = pd.DataFrame(columns=list(self.params.keys()) + ["score"])
-        hyperparameter_combinations = list(product(*param_grid.values()))
+    def search(
+        self, folds: int = 5, n_jobs: int = -1, verbose: int = 0, scoring="f1_macro"
+    ):
+        self.results = pd.DataFrame(
+            columns=list(self.params.keys())
+            + ["test_score", "fit_time", "score_time", "score_mean"]
+        )
+        hyperparameter_combinations = list(product(*self.params.values()))
         for combination in hyperparameter_combinations:
-            param_score = score(self.x, self.y)  # Why does this return an object
+            params = dict(zip(self.params.keys(), combination))
+            self.model.set_params(**params)
+            param_score = cross_validate(
+                self.model,
+                self.x,
+                self.y,
+                scoring=scoring,
+                n_jobs=n_jobs,
+                verbose=verbose,
+                cv=folds,
+            )
 
-            # Splitting
-            # (Preprocessing)
-            # Training
-            # Testing
-            # -> Score
-
-            self.results.loc[len(self.results.index)] = [*combination, score]
+            self.results.loc[len(self.results.index)] = [
+                *combination,
+                param_score["test_score"],
+                param_score["fit_time"],
+                param_score["score_time"],
+                np.mean(param_score["test_score"]),
+            ]
         return self.results
 
 
