@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from FCLayer import FcLayer
 from ACLayer import AcLayer
-from activation_functions import sigmoid, relu, sigmoid_derivative, tanh, tanh_derivative
+from activation_functions import sigmoid, relu,relu_derivative, sigmoid_derivative, tanh, tanh_derivative
 
 
 class Network:
