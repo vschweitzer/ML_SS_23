@@ -19,8 +19,6 @@ class Network:
         self.output = []
         self.epochs = epochs
         self.expand_dims = expand_dims
-        self.min_category: int
-        self.max_category: int
         self.last_result = None
         self.node_counts = node_counts
         self.activation_function = activation_function
@@ -68,13 +66,11 @@ class Network:
         data = self._clean_data(data)
         scores = self.predict_score(data)
         return [
-            np.argmax(elem)
+            [1 if value == np.max(elem[0]) else 0 for value in elem[0]] if len(elem[0]) > 1 else round(elem[0])
             for elem in scores
         ]
 
     def train(self, x_train, y_train):
-        self.min_category = min(y_train, key=lambda x: x[0])[0]
-        self.max_category = max(y_train, key=lambda x: x[0])[0]
 
         # Epoch times needed to achieve accurate NN
         for i in range(self.epochs):
@@ -102,7 +98,7 @@ class Network:
         data = self._clean_data(data)
         targets = self._clean_data(targets)
         n_features = len(data[0][0])
-        n_classes = len(np.unique(targets))
+        n_classes = targets.shape[-1]
         self._build_network(n_features, n_classes, self.node_counts)
         self.train(data, targets)
 

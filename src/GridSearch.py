@@ -61,7 +61,8 @@ class GridSearcher:
             + ["test_score", "fit_time", "score_time", "score_mean"]
         )
         hyperparameter_combinations = list(product(*self.params.values()))
-        for combination in hyperparameter_combinations:
+        total_combinations: int = len(hyperparameter_combinations)
+        for index, combination in enumerate(hyperparameter_combinations):
             params = dict(zip(self.params.keys(), combination))
             self.model.set_params(**params)
             param_score = cross_validate(
@@ -81,6 +82,8 @@ class GridSearcher:
                 param_score["score_time"],
                 np.mean(param_score["test_score"]),
             ]
+            if verbose >= 0:
+                print(f"{index + 1} / {total_combinations}")
         return self.results
 
 
