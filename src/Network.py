@@ -69,6 +69,22 @@ class Network:
             [1 if value == np.max(elem[0]) else 0 for value in elem[0]] if len(elem[0]) > 1 else round(elem[0][0])
             for elem in scores
         ]
+    
+     # predict output for given input
+    def predict_old(self, input_data):
+        # sample dimension first
+        samples = len(input_data)
+        result = []
+
+        # run network over all samples
+        for i in range(samples):
+            # forward propagation
+            output = input_data[i]
+            for layer in self.layers:
+                output = layer.forward_propagation(output)
+            result.append(output)
+
+        return result
 
     def train(self, x_train, y_train):
 
