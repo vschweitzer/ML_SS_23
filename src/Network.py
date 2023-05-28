@@ -66,18 +66,21 @@ class Network:
         # print("Predict function works")
         self.last_result = result
         # print(result)
-        return self._softmax(result)
+        return result
 
     def predict(self, data):
         data = self._clean_data(data)
         scores = self.predict_score(data)
         out = [
-            [1 if value == np.max(elem[0]) else 0 for value in elem[0]]
+            [
+                1 if index == np.argmax(elem[0]) else 0
+                for index, value in enumerate(elem[0])
+            ]
             if len(elem[0]) > 1
             else round(elem[0][0])
             for elem in scores
         ]
-        print(out)
+        # print(out)
         return out
 
     def train(self, x_train, y_train):
@@ -92,7 +95,7 @@ class Network:
                     output = layer.forward_propagation(output)
                 # result.append(output)
                 # err = np.mean(np.power(y_train[j] - output, 2))
-                error = (2 / y_train[j].size) * (output - y_train[j])
+                error = (2 / y_train[j].size) * (output[0] - y_train[j][0])
 
                 # print("Train function works")
                 for layer in reversed(self.layers):
