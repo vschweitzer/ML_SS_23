@@ -1,7 +1,10 @@
 from itertools import product
 import pandas as pd
 import numpy as np
+import time
 from sklearn.model_selection import cross_validate
+from sklearn.model_selection import KFold
+from sklearn.metrics import f1_score
 
 # def grid_search(X, y, param_grid, model_fn):
 #     best_params = None
@@ -54,32 +57,45 @@ class GridSearcher:
         self.results = None
 
     def search(
-        self, folds: int = 5, n_jobs: int = -1, verbose: int = 0, scoring="f1_macro"
+        self, folds: int = 5, n_jobs: int = -1, verbose: int = 0, scoring="macro"
     ):
         self.results = pd.DataFrame(
-            columns= ["params", "test_score", "fit_time", "score_time", "score_mean"]
+            columns=["params", "test_score", "fit_time", "score_time", "score_mean"]
         )
         hyperparameter_combinations = list(product(*self.params.values()))
         total_combinations: int = len(hyperparameter_combinations)
         for index, combination in enumerate(hyperparameter_combinations):
             params = dict(zip(self.params.keys(), combination))
             self.model.set_params(**params)
-            param_score = cross_validate(
-                self.model,
-                self.x,
-                self.y,
-                scoring=scoring,
-                n_jobs=n_jobs,
-                verbose=verbose,
-                cv=folds,
-            )
+            kf = KFold(n_splits=folds, shuffle=True, random_state=1)
+            fold_scores = []
+            fit_times = []
+            predict_times = []
+            for i, (train_index, test_index) in enumerate(kf.split(self.x)):
+                X_train = self.x.iloc[train_index]
+                X_test = self.x.iloc[test_index]
+                y_train = self.y.iloc[train_index]
+                y_test = self.y.iloc[test_index]
+
+                start_time = time.perf_counter()
+                self.model.fit(X_train, y_train)
+                fit_times.append(time.perf_counter() - start_time)
+
+                start_time = time.perf_counter()
+                prediction = self.model.predict(X_test)
+                predict_times.append(time.perf_counter() - start_time)
+
+                print(prediction)
+                f1 = f1_score(y_test, prediction, average=scoring)
+                print(f1)
+                fold_scores.append(f1)
 
             self.results.loc[len(self.results.index)] = [
                 params,
-                param_score["test_score"],
-                param_score["fit_time"],
-                param_score["score_time"],
-                np.mean(param_score["test_score"]),
+                fold_scores,
+                fit_times,
+                predict_times,
+                np.mean(fold_scores),
             ]
             if verbose >= 0:
                 print(f"{index + 1} / {total_combinations}")
