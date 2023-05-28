@@ -57,7 +57,7 @@ class GridSearcher:
         self.results = None
 
     def search(
-        self, folds: int = 5, n_jobs: int = -1, verbose: int = 0, scoring="macro"
+        self, folds: int = 5, n_jobs: int = -1, verbose: int = 0, scoring="f1_macro"
     ):
         self.results = pd.DataFrame(
             columns=["params", "test_score", "fit_time", "score_time", "score_mean"]
@@ -67,38 +67,27 @@ class GridSearcher:
         for index, combination in enumerate(hyperparameter_combinations):
             params = dict(zip(self.params.keys(), combination))
             self.model.set_params(**params)
-            kf = KFold(n_splits=folds, shuffle=True, random_state=1)
-            fold_scores = []
-            fit_times = []
-            predict_times = []
-            for i, (train_index, test_index) in enumerate(kf.split(self.x)):
-                X_train = self.x.iloc[train_index]
-                X_test = self.x.iloc[test_index]
-                y_train = self.y.iloc[train_index]
-                y_test = self.y.iloc[test_index]
-
-                start_time = time.perf_counter()
-                self.model.fit(X_train, y_train)
-                fit_times.append(time.perf_counter() - start_time)
-
-                start_time = time.perf_counter()
-                prediction = self.model.predict(X_test)
-                predict_times.append(time.perf_counter() - start_time)
-
-                print(prediction)
-                f1 = f1_score(y_test, prediction, average=scoring)
-                print(f1)
-                fold_scores.append(f1)
+            param_score = cross_validate(
+                self.model,
+                self.x,
+                self.y,
+                scoring=scoring,
+                n_jobs=n_jobs,
+                verbose=verbose,
+                cv=folds,
+            )
 
             self.results.loc[len(self.results.index)] = [
                 params,
-                fold_scores,
-                fit_times,
-                predict_times,
-                np.mean(fold_scores),
+                param_score["test_score"],
+                param_score["fit_time"],
+                param_score["score_time"],
+                np.mean(param_score["test_score"]),
             ]
             if verbose >= 0:
-                print(f"{index + 1} / {total_combinations}")
+                print(
+                    f"{index + 1} / {total_combinations}: {np.mean(param_score['test_score'])}"
+                )
         return self.results
 
 
