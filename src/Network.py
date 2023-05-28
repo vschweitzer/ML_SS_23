@@ -2,7 +2,14 @@ import numpy as np
 import pandas as pd
 from FCLayer import FcLayer
 from ACLayer import AcLayer
-from activation_functions import sigmoid, relu,relu_derivative, sigmoid_derivative, tanh, tanh_derivative
+from activation_functions import (
+    sigmoid,
+    relu,
+    relu_derivative,
+    sigmoid_derivative,
+    tanh,
+    tanh_derivative,
+)
 
 
 class Network:
@@ -12,7 +19,7 @@ class Network:
         epochs: int = 1000,
         expand_dims: bool = True,
         node_counts: list = [3],
-        activation_function = (tanh, tanh_derivative)
+        activation_function=(tanh, tanh_derivative),
     ):
         self.layers = []
         self.learning_rate = learning_rate
@@ -22,7 +29,6 @@ class Network:
         self.last_result = None
         self.node_counts = node_counts
         self.activation_function = activation_function
-
 
     def get_params(self, deep: bool = False):
         return {
@@ -65,13 +71,16 @@ class Network:
     def predict(self, data):
         data = self._clean_data(data)
         scores = self.predict_score(data)
-        return [
-            [1 if value == np.max(elem[0]) else 0 for value in elem[0]] if len(elem[0]) > 1 else round(elem[0][0])
+        out = [
+            [1 if value == np.max(elem[0]) else 0 for value in elem[0]]
+            if len(elem[0]) > 1
+            else round(elem[0][0])
             for elem in scores
         ]
+        print(out)
+        return out
 
     def train(self, x_train, y_train):
-
         # Epoch times needed to achieve accurate NN
         for i in range(self.epochs):
             error = 0
@@ -118,8 +127,8 @@ class Network:
         n_features: int,
         n_classes: int,
         node_counts: list = [3],
-
     ):
+        self.layers = []
         input_shape = n_features
         output_shape = n_classes if n_classes > 2 else 1
         prior_output = input_shape
@@ -136,5 +145,7 @@ class Network:
         self.add(FcLayer(prior_output, output_shape))
         self.add(AcLayer(self.activation_function[0], self.activation_function[1]))
 
+    # https://stackoverflow.com/questions/34968722/how-to-implement-the-softmax-function-in-python
     def _softmax(self, values: np.array):
-        return values / np.sum(values)
+        e_x = np.exp(values - np.max(values))
+        return e_x / e_x.sum(axis=0)
